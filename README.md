@@ -63,19 +63,3 @@ type FileRouteOptions = {
 
 - `routesRoot` defaults to `./routes`
 - `notFoundSegment` defaults to `not-found`
-
-## Publish
-
-Before the first publish, update the repository and homepage fields in
-`package.json` if you want them on npm.
-
-```bash
-npm view next-fs-routes
-npm login
-pnpm type-check
-pnpm test
-pnpm build
-pnpm test:fixture
-npm pack
-npm publish
-```
