@@ -1,7 +1,15 @@
 {
-  "name": "@moseslucaspogi/next-fs-routes",
+  "name": "next-fs-routes",
   "version": "0.1.0",
-  "description": "Next.js-style file-structure routing helpers for Vite apps using React Router data routes.",
+  "description": "Next.js-style file-structure routing for Vite apps using React Router data routes.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/moseslucas/next-fs-routes.git"
+  },
+  "homepage": "https://github.com/moseslucas/next-fs-routes#readme",
+  "bugs": {
+    "url": "https://github.com/moseslucas/next-fs-routes/issues"
+  },
   "author": "Moses Lucas (Philippines)",
   "type": "module",
   "license": "MIT",
@@ -18,16 +26,12 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
-    "./browser-router": {
-      "types": "./dist/browser-router.d.ts",
-      "import": "./dist/browser-router.js"
-    },
     "./package.json": "./package.json"
   },
   "scripts": {
     "build": "tsup src/index.ts src/browser-router.ts --format esm --dts --clean",
     "type-check": "tsc --noEmit -p tsconfig.json",
-    "test": "vitest run --config vitest.config.ts",
+    "test": "vitest run --environment node tests/core.test.ts tests/browser-router.test.ts",
     "test:fixture": "vite build fixtures/vite-app --config fixtures/vite-app/vite.config.ts",
     "pack:check": "npm_config_cache=./.npm-cache npm pack --dry-run",
     "prepublishOnly": "pnpm type-check && pnpm test && pnpm build && pnpm test:fixture"
@@ -37,6 +41,7 @@
     "react-router-dom": ">=6.30.0 <8"
   },
   "devDependencies": {
+    "@types/node": "^20.0.0",
     "@types/react": "^19.0.0",
     "@vitejs/plugin-react": "^4.3.4",
     "react": "^19.0.0",

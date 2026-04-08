@@ -1,23 +1,26 @@
 {
-  "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "baseUrl": ".",
+    "target": "ES2020",
+    "lib": ["DOM", "DOM.Iterable", "ES2020"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "jsx": "react-jsx",
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "isolatedModules": true,
+    "resolveJsonModule": true,
     "incremental": false,
+    "types": ["vitest/globals"],
+    "baseUrl": ".",
     "paths": {
-      "@moseslucaspogi/next-fs-routes": [
-        "./src/index.ts"
-      ],
-      "@moseslucaspogi/next-fs-routes/browser-router": [
-        "./src/browser-router.ts"
-      ]
+      "next-fs-routes": ["./src/index.ts"]
     }
   },
   "include": [
     "src/**/*.ts",
-    "tests/**/*.ts",
-    "fixtures/**/*.ts",
-    "fixtures/**/*.tsx",
-    "vitest.config.ts"
+    "tests/**/*.ts"
   ],
   "exclude": [
     "dist",

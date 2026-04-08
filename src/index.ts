@@ -1,4 +1,9 @@
 export {
+  createViteFileRoutesRouter,
+  type CreateViteFileRoutesRouterOptions,
+} from './browser-router';
+
+export {
   createFileRoutes,
   validateFileRouteModules,
   type FileRouteModule,

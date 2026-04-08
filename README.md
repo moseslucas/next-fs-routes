@@ -1,18 +1,20 @@
-# `@moseslucaspogi/next-fs-routes`
+# `next-fs-routes`
 
-File-based routing helpers for Vite apps using React Router v6 data routes.
+Next.js-style file-structure routing for Vite apps using React Router data routes.
 
 ## Install
 
 ```bash
-pnpm add @moseslucaspogi/next-fs-routes
+pnpm add next-fs-routes
 ```
 
 ## Usage
 
 ```ts
-import { type FileRouteModule } from "@moseslucaspogi/next-fs-routes";
-import { createViteFileRoutesRouter } from "@moseslucaspogi/next-fs-routes/browser-router";
+import {
+  createViteFileRoutesRouter,
+  type FileRouteModule,
+} from "next-fs-routes";
 
 const routeModules = import.meta.glob<FileRouteModule>(
   "./routes/**/{layout,page}.tsx",
@@ -68,12 +70,12 @@ Before the first publish, update the repository and homepage fields in
 `package.json` if you want them on npm.
 
 ```bash
-npm view @moseslucaspogi/next-fs-routes
+npm view next-fs-routes
 npm login
 pnpm type-check
 pnpm test
 pnpm build
 pnpm test:fixture
 npm pack
-npm publish --access public
+npm publish
 ```

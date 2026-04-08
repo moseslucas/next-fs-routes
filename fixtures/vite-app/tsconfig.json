@@ -1,14 +1,9 @@
 {
-  "extends": "../../../../tsconfig.json",
+  "extends": "../../tsconfig.json",
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@moseslucaspogi/next-fs-routes": [
-        "../../src/index.ts"
-      ],
-      "@moseslucaspogi/next-fs-routes/browser-router": [
-        "../../src/browser-router.ts"
-      ]
+      "next-fs-routes": ["../../src/index.ts"]
     }
   },
   "include": [
