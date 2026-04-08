@@ -1,0 +1,26 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "incremental": false,
+    "paths": {
+      "@moseslucaspogi/next-fs-routes": [
+        "./src/index.ts"
+      ],
+      "@moseslucaspogi/next-fs-routes/browser-router": [
+        "./src/browser-router.ts"
+      ]
+    }
+  },
+  "include": [
+    "src/**/*.ts",
+    "tests/**/*.ts",
+    "fixtures/**/*.ts",
+    "fixtures/**/*.tsx",
+    "vitest.config.ts"
+  ],
+  "exclude": [
+    "dist",
+    "node_modules"
+  ]
+}
