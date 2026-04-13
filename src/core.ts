@@ -1,4 +1,5 @@
 import type { ComponentType } from 'react';
+import { Outlet as RouterOutlet } from 'react-router-dom';
 import type {
   ActionFunction,
   LoaderFunction,
@@ -37,6 +38,8 @@ type LazyRoute = NonNullable<RouteObject['lazy']>;
 
 const ROUTE_KIND_PATTERN = /^(?:(.*)\/)?(layout|page)\.tsx$/;
 const SUPPORTED_DYNAMIC_SEGMENT_PATTERN = /^\[([^\][/.]+)\]$/;
+const ROUTE_GROUP_SEGMENT_PATTERN = /^\(([^/]+)\)$/;
+const INDEX_CONFLICT_KEY = ':index';
 
 export function createFileRoutes(
   routeModules: FileRouteModules,
@@ -81,6 +84,16 @@ function createRouteTree(
     const segments = parsedModulePath.directory === ''
       ? []
       : parsedModulePath.directory.split('/');
+
+    if (
+      segments.length === 1 &&
+      isRouteGroupSegment(segments[0]) &&
+      parsedModulePath.fileKind === 'page'
+    ) {
+      throw new Error(
+        `Top-level route groups cannot contain page.tsx directly. Move "${modulePath}" into a nested folder or define "${routesRoot}/page.tsx" instead.`
+      );
+    }
 
     if (segments.length === 1 && segments[0] === notFoundSegment) {
       if (parsedModulePath.fileKind !== 'page') {
@@ -157,6 +170,8 @@ function materializeRoutes(
 
   if (tree.root.layoutModulePath) {
     rootRoute.lazy = createLazy(tree.root.layoutModulePath);
+  } else {
+    rootRoute.Component = RouterOutlet;
   }
 
   return [rootRoute];
@@ -179,6 +194,7 @@ function buildNodeRoute(
 ): RouteObject {
   const childRoutes = buildChildRoutes(node, createLazy);
   const routePath = toRoutePath(node.rawSegment);
+  const hasConcretePath = routePath !== '';
   const hasChildren = childRoutes.length > 0;
   const hasLayout = Boolean(node.layoutModulePath);
   const hasPage = Boolean(node.pageModulePath);
@@ -187,8 +203,11 @@ function buildNodeRoute(
     const route: RouteObject = {
       children: childRoutes,
       lazy: createLazy(node.layoutModulePath!),
-      path: routePath,
     };
+
+    if (hasConcretePath) {
+      route.path = routePath;
+    }
 
     if (hasPage) {
       route.children = [
@@ -204,6 +223,17 @@ function buildNodeRoute(
   }
 
   if (hasPage && !hasChildren) {
+    if (!hasConcretePath) {
+      return {
+        children: [
+          {
+            index: true,
+            lazy: createLazy(node.pageModulePath!),
+          },
+        ],
+      };
+    }
+
     return {
       lazy: createLazy(node.pageModulePath!),
       path: routePath,
@@ -212,8 +242,11 @@ function buildNodeRoute(
 
   const route: RouteObject = {
     children: childRoutes,
-    path: routePath,
   };
+
+  if (hasConcretePath) {
+    route.path = routePath;
+  }
 
   if (hasPage) {
     route.children = [
@@ -265,19 +298,26 @@ function assertHasDefaultExport(
 
 function validateSiblingSegments(node: FileRouteNode) {
   const seenSegments = new Map<string, string>();
+  const pageCreatesIndex = node.rawSegment === null
+    ? Boolean(node.pageModulePath)
+    : Boolean(node.pageModulePath && (node.layoutModulePath || node.children.size > 0));
+
+  if (pageCreatesIndex) {
+    seenSegments.set(INDEX_CONFLICT_KEY, node.rawSegment ?? '/');
+  }
 
   for (const childNode of node.children.values()) {
-    const routePath = toRoutePath(childNode.rawSegment);
-    const conflictKey = isDynamicRoutePath(routePath) ? ':dynamic' : routePath;
-    const previousSegment = seenSegments.get(conflictKey);
+    for (const entry of collectConflictEntries(childNode)) {
+      const previousSegment = seenSegments.get(entry.key);
 
-    if (previousSegment) {
-      throw new Error(
-        `Conflicting route folders "${previousSegment}" and "${childNode.rawSegment}" both resolve to "${routePath}" at the same level.`
-      );
+      if (previousSegment) {
+        throw new Error(
+          `Conflicting route folders "${previousSegment}" and "${entry.source}" both resolve to "${entry.routePath}" at the same level.`
+        );
+      }
+
+      seenSegments.set(entry.key, entry.source);
     }
-
-    seenSegments.set(conflictKey, childNode.rawSegment!);
   }
 }
 
@@ -329,6 +369,10 @@ function toRoutePath(rawSegment: string | null) {
     return '';
   }
 
+  if (isRouteGroupSegment(rawSegment)) {
+    return '';
+  }
+
   const dynamicMatch = rawSegment.match(SUPPORTED_DYNAMIC_SEGMENT_PATTERN);
 
   if (dynamicMatch) {
@@ -346,6 +390,50 @@ function toRoutePath(rawSegment: string | null) {
 
 function isDynamicRoutePath(routePath: string) {
   return routePath.startsWith(':');
+}
+
+function isRouteGroupSegment(rawSegment: string | null) {
+  return rawSegment !== null && ROUTE_GROUP_SEGMENT_PATTERN.test(rawSegment);
+}
+
+function collectConflictEntries(
+  node: FileRouteNode
+): Array<{
+  key: string;
+  routePath: string;
+  source: string;
+}> {
+  const routePath = toRoutePath(node.rawSegment);
+
+  if (routePath !== '') {
+    return [
+      {
+        key: isDynamicRoutePath(routePath) ? ':dynamic' : routePath,
+        routePath,
+        source: node.rawSegment!,
+      },
+    ];
+  }
+
+  if (!isRouteGroupSegment(node.rawSegment)) {
+    return [];
+  }
+
+  const entries = node.pageModulePath
+    ? [
+        {
+          key: INDEX_CONFLICT_KEY,
+          routePath: '(index)',
+          source: node.rawSegment!,
+        },
+      ]
+    : [];
+
+  for (const childNode of node.children.values()) {
+    entries.push(...collectConflictEntries(childNode));
+  }
+
+  return entries;
 }
 
 function createNode(rawSegment: string | null): FileRouteNode {

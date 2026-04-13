@@ -1,6 +1,6 @@
 {
   "name": "next-fs-routes",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Next.js-style file-structure routing for Vite apps using React Router data routes.",
   "repository": {
     "type": "git",
@@ -43,6 +43,7 @@
   "devDependencies": {
     "@types/node": "^20.0.0",
     "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
     "@vitejs/plugin-react": "^4.3.4",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",

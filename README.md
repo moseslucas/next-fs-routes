@@ -32,11 +32,19 @@ export const router = createViteFileRoutesRouter({
 - `routes/page.tsx` creates the root index route.
 - `routes/<segment>/page.tsx` creates `/<segment>`.
 - `routes/<segment>/layout.tsx` creates a nested layout route.
+- `routes/(group)/<segment>/page.tsx` creates `/<segment>` without adding the group folder to the URL.
 - `routes/[id]/page.tsx` becomes `/:id`.
 - `routes/not-found/page.tsx` becomes the catch-all `*`.
 
 Route modules must default export a React component. They may also export
 `loader`, `action`, and `ErrorBoundary`.
+
+Route groups affect folders only, not filenames, so the recommended Vite glob
+stays explicit:
+
+```ts
+import.meta.glob<FileRouteModule>("./routes/**/{layout,page}.tsx");
+```
 
 ## API
 
